@@ -71,6 +71,7 @@ namespace cSharp_Tetris2
             
         }
 
+        // block 움직임
         private void moveBlock(int moveDown = 0, int moveSide = 0)
         {
             var newX = currentX + moveSide;
@@ -88,6 +89,7 @@ namespace cSharp_Tetris2
         }
 
 
+        // block class에서 랜덤하게 가져옴
         private Block getRandomBlock()
         {
             var block = Block.GetRandomShape();
@@ -105,6 +107,7 @@ namespace cSharp_Tetris2
         int boardHeight = 20;
         int dotSize = 20;
 
+        // 게임 보드판 생성
         private void boardLoad()
         {
             pictureBox1.Width = boardWidth * dotSize;
@@ -123,6 +126,7 @@ namespace cSharp_Tetris2
         Bitmap workingBitmap;
         Graphics workingGraphics;
 
+        //block 그리기
         private void drawShape()
         {
             workingBitmap = new Bitmap(boardBitmap);
