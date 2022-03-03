@@ -10,10 +10,13 @@ namespace cSharp_Tetris2
     {
 
         private static Block[] blockArray;
+        private int[,] backupDots;
 
         public int Width;
         public int Height;
         public int[,] Dots;
+
+
 
         static Block()
         {
@@ -68,6 +71,28 @@ namespace cSharp_Tetris2
             };
 
         }
+
+        public void turn()
+        {
+            backupDots = Dots;
+
+            Dots = new int[Width, Height];
+
+            for (int i = 0; i < Width; i++)
+            {
+                for (int j = 0; j < Height; j++)
+                {
+                    Dots[i, j] = backupDots[Height - 1 - j, i];
+                }
+            }
+
+            var temp = Width;
+            Width = Height;
+            Height = temp;
+
+        }
+
+
 
         public static Block GetRandomShape()
         {

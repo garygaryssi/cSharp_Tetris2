@@ -53,7 +53,7 @@ namespace cSharp_Tetris2
                     break;
 
                 case Keys.W:
-                    Console.WriteLine("turn");
+                    currentBlock.turn();
                     break;
 
                 default:
@@ -63,7 +63,7 @@ namespace cSharp_Tetris2
             moveBlock(horizontalMove, verticalMove);
         }
 
-
+       
         private void timer1_Tick(object sender, EventArgs e)
         {
             moveBlock(moveDown: 1);
