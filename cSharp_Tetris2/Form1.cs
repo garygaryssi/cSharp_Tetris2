@@ -17,6 +17,7 @@ namespace cSharp_Tetris2
         int currentX;
         int currentY;
 
+
         public Form1()
         {
             InitializeComponent();
@@ -25,11 +26,11 @@ namespace cSharp_Tetris2
 
             currentBlock = getRandomBlock();
 
-            timer.Interval = 500;
+            timer.Interval = 1500;
             timer.Tick += timer1_Tick;
             timer.Start();
 
-            
+
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -59,35 +60,53 @@ namespace cSharp_Tetris2
                 default:
                     return;
             }
+            var movecheck = moveBlockCheck(horizontalMove, verticalMove);
 
-            moveBlock(horizontalMove, verticalMove);
         }
 
-       
+
         private void timer1_Tick(object sender, EventArgs e)
         {
-            moveBlock(moveDown: 1);
-            check();
-            
+            var moveBlock = moveBlockCheck(moveDown: 1);
+
+            if (!moveBlock)
+            {
+
+                boardBitmap = new Bitmap(workingBitmap);
+
+                boardUpdate();
+
+                currentBlock = getRandomBlock();
+
+                rowClear();
+            }
         }
 
         // block 움직임
-        private void moveBlock(int moveDown = 0, int moveSide = 0)
+        private bool moveBlockCheck(int moveDown = 0, int moveSide = 0)
         {
             var newX = currentX + moveSide;
             var newY = currentY + moveDown;
+
+            if (newX < 0 || newX + currentBlock.Width > boardWidth || newY + currentBlock.Height > boardHeight)
+                return false;
+
+            for (int i = 0; i < currentBlock.Width; i++)
+            {
+                for (int j = 0; j < currentBlock.Height; j++)
+                {
+                    if (newY + j > 0 && boardArray[newX + i, newY + j] == 1 && currentBlock.Dots[j, i] == 1)
+                        return false;
+                }
+            }
 
             currentX = newX;
             currentY = newY;
 
             drawShape();
-        }
 
-        private void check()
-        {
-        
+            return true;
         }
-
 
         // block class에서 랜덤하게 가져옴
         private Block getRandomBlock()
@@ -106,6 +125,9 @@ namespace cSharp_Tetris2
         int boardWidth = 15;
         int boardHeight = 20;
         int dotSize = 20;
+        int[,] boardArray;
+
+
 
         // 게임 보드판 생성
         private void boardLoad()
@@ -120,6 +142,8 @@ namespace cSharp_Tetris2
             boardGraphics.FillRectangle(Brushes.LightGray, 0, 0, boardBitmap.Width, boardBitmap.Height);
 
             pictureBox1.Image = boardBitmap;
+
+            boardArray = new int[boardWidth, boardHeight];
         }
 
 
@@ -137,7 +161,7 @@ namespace cSharp_Tetris2
                 for (int j = 0; j < currentBlock.Height; j++)
                 {
                     if (currentBlock.Dots[j, i] == 1)
-                        workingGraphics.FillRectangle(Brushes.Red, (currentX + i) * dotSize,  (currentY + j) * dotSize, dotSize, dotSize);
+                        workingGraphics.FillRectangle(Brushes.Red, (currentX + i) * dotSize, (currentY + j) * dotSize, dotSize, dotSize);
                 }
             }
 
@@ -145,6 +169,75 @@ namespace cSharp_Tetris2
 
         }
 
-        
+
+        private void boardUpdate()
+        {
+            for (int i = 0; i < currentBlock.Width; i++)
+            {
+                for (int j = 0; j < currentBlock.Height; j++)
+                {
+                    if (currentBlock.Dots[j, i] == 1)
+                    {
+                        boardArray[currentX + i, currentY + j] = 1;
+
+                    }
+                }
+
+            }
+
+        }
+
+        int score;
+
+        private void rowClear()
+        {
+
+
+            for (int i = 0; i < boardHeight; i++)
+            {
+                int j;
+                for (j = boardWidth - 1; j >= 0; j--)
+                {
+                    if (boardArray[j, i] == 0)
+                        break;
+                }
+
+                if (j == -1)
+                {
+                    score++;
+                    label1.Text = "Score: " + score;
+                    label2.Text = "Level: " + score / 10;
+                    timer.Interval -= 10;
+
+                    for (j = 0; j < boardWidth; j++)
+                    {
+                        for (int k = i; k > 0; k--)
+                        {
+                            boardArray[j, k] = boardArray[j, k - 1];
+                        }
+
+                        boardArray[j, 0] = 0;
+                    }
+                }
+            }
+            for (int i = 0; i < boardHeight; i++)
+            {
+
+                for (int j = 0; j < boardWidth; j++)
+                {
+                    Console.Write(boardArray[j, i] + " ");
+
+                    boardGraphics = Graphics.FromImage(boardBitmap);
+
+                    boardGraphics.FillRectangle(
+                        boardArray[j, i] == 1 ? Brushes.Red : Brushes.LightGray, j * dotSize, i * dotSize, dotSize, dotSize);
+                }
+                Console.WriteLine(" ");
+            }
+
+            pictureBox1.Image = boardBitmap;
+        }
+
     }
+
 }
