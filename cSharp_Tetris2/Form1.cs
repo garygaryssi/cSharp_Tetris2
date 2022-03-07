@@ -172,12 +172,15 @@ namespace cSharp_Tetris2
 
         private void boardUpdate()
         {
+
             for (int i = 0; i < currentBlock.Width; i++)
             {
                 for (int j = 0; j < currentBlock.Height; j++)
                 {
                     if (currentBlock.Dots[j, i] == 1)
                     {
+                        checkGameOver();
+                       
                         boardArray[currentX + i, currentY + j] = 1;
 
                     }
@@ -185,6 +188,18 @@ namespace cSharp_Tetris2
 
             }
 
+        }
+
+        private bool checkGameOver()
+        {
+            if (currentY < 0)
+            {
+                timer.Stop();
+                MessageBox.Show("Game Over");
+                Application.Restart();
+            }
+
+            return true;
         }
 
         int score;
@@ -213,6 +228,7 @@ namespace cSharp_Tetris2
                     {
                         for (int k = i; k > 0; k--)
                         {
+                            // Row 삭제후 block 이동
                             boardArray[j, k] = boardArray[j, k - 1];
                         }
 
