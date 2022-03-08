@@ -71,8 +71,8 @@ namespace cSharp_Tetris2
                     if (Cv2.WaitKey(1) >= 0)
                         break;
                 }
-            }
             video = null;
+            }
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -183,9 +183,12 @@ namespace cSharp_Tetris2
 
             boardGraphics.FillRectangle(Brushes.Transparent, 0, 0, boardBitmap.Width, boardBitmap.Height);
 
+            pictureBox1.Image = workingBitmap;
+
             pictureBox1.Image = boardBitmap;
 
             boardArray = new int[boardWidth, boardHeight];
+            
         }
 
 
@@ -196,7 +199,9 @@ namespace cSharp_Tetris2
         private void drawShape()
         {
             workingBitmap = new Bitmap(boardBitmap);
+
             workingGraphics = Graphics.FromImage(workingBitmap);
+
 
             for (int i = 0; i < currentBlock.Width; i++)
             {
@@ -221,7 +226,7 @@ namespace cSharp_Tetris2
                 {
                     if (currentBlock.Dots[j, i] == 1)
                     {
-                       
+
                         if (currentX + i > 15 || currentY + j < 0)
                         {
                             break;
