@@ -7,13 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
 
 namespace cSharp_Tetris2
 {
     public partial class Form1 : Form
     {
+        string rtspUrl = "rtsp://192.168.21.96:554/media/1/1/Profile1";
         Block currentBlock;
         Timer timer = new Timer();
+
+
         int currentX;
         int currentY;
 
@@ -22,15 +27,68 @@ namespace cSharp_Tetris2
         {
             InitializeComponent();
 
+            pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
+
             boardLoad();
 
-            currentBlock = getRandomBlock();
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Game Start!!!!!!!");
 
-            timer.Interval = 1500;
+            timer.Interval = 500;
             timer.Tick += timer1_Tick;
             timer.Start();
 
+            currentBlock = getRandomBlock();
 
+            LoadipCam();
+
+        }
+
+        private void LoadipCam()
+        {
+            VideoCapture video = new VideoCapture();
+
+            video.Open(rtspUrl);
+
+            using (Mat image = new Mat())
+            {
+                while (true)
+                {
+                    if (!video.Read(image))
+                    {
+                        Cv2.WaitKey();
+                    }
+
+                    if (!image.Empty())
+                    {
+                        Bitmap bmp = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(image);
+
+                        pictureBox1.BackgroundImage = bmp;
+
+                    }
+                    if (Cv2.WaitKey(1) >= 0)
+                        break;
+                }
+            }
+            video = null;
+        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            var moveBlock = moveBlockCheck(moveDown: 1);
+
+            if (!moveBlock)
+            {
+
+                boardBitmap = new Bitmap(workingBitmap);
+
+                boardUpdate();
+
+                currentBlock = getRandomBlock();
+
+                rowClear();
+            }
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -65,22 +123,6 @@ namespace cSharp_Tetris2
         }
 
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            var moveBlock = moveBlockCheck(moveDown: 1);
-
-            if (!moveBlock)
-            {
-
-                boardBitmap = new Bitmap(workingBitmap);
-
-                boardUpdate();
-
-                currentBlock = getRandomBlock();
-
-                rowClear();
-            }
-        }
 
         // block 움직임
         private bool moveBlockCheck(int moveDown = 0, int moveSide = 0)
@@ -139,7 +181,7 @@ namespace cSharp_Tetris2
 
             boardGraphics = Graphics.FromImage(boardBitmap);
 
-            boardGraphics.FillRectangle(Brushes.LightGray, 0, 0, boardBitmap.Width, boardBitmap.Height);
+            boardGraphics.FillRectangle(Brushes.Transparent, 0, 0, boardBitmap.Width, boardBitmap.Height);
 
             pictureBox1.Image = boardBitmap;
 
@@ -179,8 +221,13 @@ namespace cSharp_Tetris2
                 {
                     if (currentBlock.Dots[j, i] == 1)
                     {
-                        checkGameOver();
                        
+                        if (currentX + i > 15 || currentY + j < 0)
+                        {
+                            break;
+                        }
+                        checkGameOver();
+
                         boardArray[currentX + i, currentY + j] = 1;
 
                     }
@@ -203,10 +250,10 @@ namespace cSharp_Tetris2
         }
 
         int score;
+        bool clearCheck = false;
 
         private void rowClear()
         {
-
 
             for (int i = 0; i < boardHeight; i++)
             {
@@ -219,6 +266,7 @@ namespace cSharp_Tetris2
 
                 if (j == -1)
                 {
+                    clearCheck = true;
                     score++;
                     label1.Text = "Score: " + score;
                     label2.Text = "Level: " + score / 10;
@@ -236,6 +284,7 @@ namespace cSharp_Tetris2
                     }
                 }
             }
+
             for (int i = 0; i < boardHeight; i++)
             {
 
@@ -245,8 +294,17 @@ namespace cSharp_Tetris2
 
                     boardGraphics = Graphics.FromImage(boardBitmap);
 
-                    boardGraphics.FillRectangle(
-                        boardArray[j, i] == 1 ? Brushes.Red : Brushes.LightGray, j * dotSize, i * dotSize, dotSize, dotSize);
+                    if (boardArray[j, i] == 1)
+                    {
+                        boardGraphics.FillRectangle(Brushes.BlanchedAlmond, j * dotSize, i * dotSize, dotSize, dotSize);
+                    }
+
+                    if (boardArray[j, i] == 0 && clearCheck == true)
+                    {
+                        boardGraphics.Clear(Color.Transparent);
+
+                        clearCheck = false;
+                    }
                 }
                 Console.WriteLine(" ");
             }
